@@ -21,7 +21,7 @@
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@ %p access:%@>", self.class, self, @(self.access)];
+    return [NSString stringWithFormat:@"<%@ %p access:%@>", self.class, (void *)self, @(self.access)];
 }
 
 @end

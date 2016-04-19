@@ -11,27 +11,33 @@ enum class empty_flags : unsigned {
     NONE = 0,
     ALL = 0,
 };
-constexpr empty_flags operator|(empty_flags lhs, empty_flags rhs) noexcept {
+#if __cpp_constexpr >= 201103L
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR inline
+#endif
+CONSTEXPR empty_flags operator|(empty_flags lhs, empty_flags rhs) noexcept {
     return static_cast<empty_flags>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs));
 }
-constexpr empty_flags& operator|=(empty_flags& lhs, empty_flags rhs) noexcept {
+CONSTEXPR empty_flags& operator|=(empty_flags& lhs, empty_flags rhs) noexcept {
     return lhs = lhs | rhs;
 }
-constexpr empty_flags operator&(empty_flags lhs, empty_flags rhs) noexcept {
+CONSTEXPR empty_flags operator&(empty_flags lhs, empty_flags rhs) noexcept {
     return static_cast<empty_flags>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
 }
-constexpr empty_flags& operator&=(empty_flags& lhs, empty_flags rhs) noexcept {
+CONSTEXPR empty_flags& operator&=(empty_flags& lhs, empty_flags rhs) noexcept {
     return lhs = lhs & rhs;
 }
-constexpr empty_flags operator^(empty_flags lhs, empty_flags rhs) noexcept {
+CONSTEXPR empty_flags operator^(empty_flags lhs, empty_flags rhs) noexcept {
     return static_cast<empty_flags>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
 }
-constexpr empty_flags& operator^=(empty_flags& lhs, empty_flags rhs) noexcept {
+CONSTEXPR empty_flags& operator^=(empty_flags& lhs, empty_flags rhs) noexcept {
     return lhs = lhs ^ rhs;
 }
-constexpr empty_flags operator~(empty_flags x) noexcept {
+CONSTEXPR empty_flags operator~(empty_flags x) noexcept {
     return static_cast<empty_flags>(~static_cast<unsigned>(x));
 }
+#undef CONSTEXPR
 
 }  // namespace testsuite
 

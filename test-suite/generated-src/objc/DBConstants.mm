@@ -3,8 +3,6 @@
 
 #import "DBConstants.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
 
 BOOL const DBConstantsBoolConstant = YES;
 
@@ -21,13 +19,6 @@ float const DBConstantsF32Constant = 5.0f;
 double const DBConstantsF64Constant = 5.0;
 
 NSString * __nonnull const DBConstantsStringConstant = @"string-constant";
-
-NSNumber * __nullable const DBConstantsOptionalIntegerConstant = @1;
-
-DBConstants * __nonnull const DBConstantsObjectConstant = [[DBConstants alloc] initWithSomeInteger:DBConstantsI32Constant
-        someString:DBConstantsStringConstant];
-
-#pragma clang diagnostic pop
 
 @implementation DBConstants
 
@@ -48,9 +39,22 @@ DBConstants * __nonnull const DBConstantsObjectConstant = [[DBConstants alloc] i
                                   someString:someString];
 }
 
++ (NSNumber * __nullable)optionalIntegerConstant
+{
+    static NSNumber * const s_optionalIntegerConstant = @1;
+    return s_optionalIntegerConstant;
+}
+
++ (DBConstants * __nonnull)objectConstant
+{
+    static DBConstants * const s_objectConstant = [[DBConstants alloc] initWithSomeInteger:DBConstantsI32Constant
+            someString:DBConstantsStringConstant];
+    return s_objectConstant;
+}
+
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<%@ %p someInteger:%@ someString:%@>", self.class, self, @(self.someInteger), self.someString];
+    return [NSString stringWithFormat:@"<%@ %p someInteger:%@ someString:%@>", self.class, (void *)self, @(self.someInteger), self.someString];
 }
 
 @end

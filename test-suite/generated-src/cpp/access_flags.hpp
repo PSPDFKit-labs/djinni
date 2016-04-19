@@ -20,27 +20,33 @@ enum class access_flags : unsigned {
     SYSTEM_EXECUTE = 1 << 8,
     EVERYBODY = 0 | OWNER_READ | OWNER_WRITE | OWNER_EXECUTE | GROUP_READ | GROUP_WRITE | GROUP_EXECUTE | SYSTEM_READ | SYSTEM_WRITE | SYSTEM_EXECUTE,
 };
-constexpr access_flags operator|(access_flags lhs, access_flags rhs) noexcept {
+#if __cpp_constexpr >= 201103L
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR inline
+#endif
+CONSTEXPR access_flags operator|(access_flags lhs, access_flags rhs) noexcept {
     return static_cast<access_flags>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs));
 }
-constexpr access_flags& operator|=(access_flags& lhs, access_flags rhs) noexcept {
+CONSTEXPR access_flags& operator|=(access_flags& lhs, access_flags rhs) noexcept {
     return lhs = lhs | rhs;
 }
-constexpr access_flags operator&(access_flags lhs, access_flags rhs) noexcept {
+CONSTEXPR access_flags operator&(access_flags lhs, access_flags rhs) noexcept {
     return static_cast<access_flags>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
 }
-constexpr access_flags& operator&=(access_flags& lhs, access_flags rhs) noexcept {
+CONSTEXPR access_flags& operator&=(access_flags& lhs, access_flags rhs) noexcept {
     return lhs = lhs & rhs;
 }
-constexpr access_flags operator^(access_flags lhs, access_flags rhs) noexcept {
+CONSTEXPR access_flags operator^(access_flags lhs, access_flags rhs) noexcept {
     return static_cast<access_flags>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
 }
-constexpr access_flags& operator^=(access_flags& lhs, access_flags rhs) noexcept {
+CONSTEXPR access_flags& operator^=(access_flags& lhs, access_flags rhs) noexcept {
     return lhs = lhs ^ rhs;
 }
-constexpr access_flags operator~(access_flags x) noexcept {
+CONSTEXPR access_flags operator~(access_flags x) noexcept {
     return static_cast<access_flags>(~static_cast<unsigned>(x));
 }
+#undef CONSTEXPR
 
 }  // namespace testsuite
 

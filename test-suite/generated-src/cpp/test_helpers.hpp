@@ -14,7 +14,7 @@ namespace testsuite {
 
 class ClientInterface;
 class UserToken;
-enum class color;
+enum class color : int;
 struct AssortedPrimitives;
 struct MapListRecord;
 struct NestedCollection;

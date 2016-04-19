@@ -11,6 +11,8 @@
 + (nonnull instancetype)constantsWithSomeInteger:(int32_t)someInteger
                                       someString:(nonnull NSString *)someString;
 
++ (NSNumber * __nullable)optionalIntegerConstant;
++ (DBConstants * __nonnull)objectConstant;
 @property (nonatomic, readonly) int32_t someInteger;
 
 @property (nonatomic, readonly, nonnull) NSString * someString;
@@ -31,5 +33,3 @@ extern float const DBConstantsF32Constant;
  */
 extern double const DBConstantsF64Constant;
 extern NSString * __nonnull const DBConstantsStringConstant;
-extern NSNumber * __nullable const DBConstantsOptionalIntegerConstant;
-extern DBConstants * __nonnull const DBConstantsObjectConstant;

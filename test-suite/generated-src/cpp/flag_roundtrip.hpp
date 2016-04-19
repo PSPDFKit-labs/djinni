@@ -3,11 +3,12 @@
 
 #pragma once
 
-#include "access_flags.hpp"
-#include "empty_flags.hpp"
 #include <experimental/optional>
 
 namespace testsuite {
+
+enum class access_flags : unsigned;
+enum class empty_flags : unsigned;
 
 class FlagRoundtrip {
 public:
