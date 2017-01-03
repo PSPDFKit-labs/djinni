@@ -371,15 +371,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
         w.w(s"return ").nestedN(2) {
           w.w("[NSString stringWithFormat:@\"<%@ %p")
 
-          for (f <- r.fields) {
-            w.w(s" ${idObjc.field(f.ident)}:")
-            f.ty.resolved.base match {
-              case extern: MExtern =>
-                w.w(s"${extern.objc.printDescription}")
-              case _ =>
-                w.w("%@")
-            }
-          }
+          for (f <- r.fields) w.w(s" ${idObjc.field(f.ident)}:%@")
           w.w(">\", self.class, (void *)self")
 
           for (f <- r.fields) {
@@ -391,7 +383,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                 case DEnum => w.w(s"@(self.${idObjc.field(f.ident)})")
                 case _ => w.w(s"self.${idObjc.field(f.ident)}")
               }
-              case e: MExtern => w.w("self." + idObjc.field(f.ident))
+              case e: MExtern => w.w(e.objc.printDescription.format("self." + idObjc.field(f.ident)))
               case _ => w.w(s"self.${idObjc.field(f.ident)}")
             }
           }
