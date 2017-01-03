@@ -2,7 +2,7 @@
 #import "DBClientReturnedRecord+Private.h"
 
 static NSString *DBHelloWorld = @"Hello World!";
-static NSString *DBNonAscii = @"Non-ASCII / 非 ASCII 字符";
+static NSString *DBNonAscii = @"Non-ASCII /\0 非 ASCII 字符";
 
 @implementation DBClientInterfaceImpl
 
@@ -23,6 +23,22 @@ static NSString *DBNonAscii = @"Non-ASCII / 非 ASCII 字符";
 - (NSString *)returnStr
 {
     return @"test";
+}
+
+- (nonnull NSString *)methTakingInterface:(nullable id<DBClientInterface>)i {
+    if (i) {
+        return [i returnStr];
+    } else {
+        return @"";
+    }
+}
+
+- (nonnull NSString *)methTakingOptionalInterface:(nullable id<DBClientInterface>)i {
+    if (i) {
+        return [i returnStr];
+    } else {
+        return @"";
+    }
 }
 
 @end

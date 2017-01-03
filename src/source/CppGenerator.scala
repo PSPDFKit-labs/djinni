@@ -42,10 +42,16 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       tm.args.foreach((x) => find(x, forwardDeclareOnly))
       find(tm.base, forwardDeclareOnly)
     }
-    def find(m: Meta, forwardDeclareOnly : Boolean) = for(r <- marshal.references(m, name, forwardDeclareOnly)) r match {
-      case ImportRef(arg) => hpp.add("#include " + arg)
-      case DeclRef(decl, Some(spec.cppNamespace)) => hppFwds.add(decl)
-      case DeclRef(_, _) =>
+    def find(m: Meta, forwardDeclareOnly : Boolean) = {
+      for(r <- marshal.hppReferences(m, name, forwardDeclareOnly)) r match {
+        case ImportRef(arg) => hpp.add("#include " + arg)
+        case DeclRef(decl, Some(spec.cppNamespace)) => hppFwds.add(decl)
+        case DeclRef(_, _) =>
+      }
+      for(r <- marshal.cppReferences(m, name, forwardDeclareOnly)) r match {
+        case ImportRef(arg) => cpp.add("#include " + arg)
+        case DeclRef(_, _) =>
+      }
     }
   }
 
@@ -128,7 +134,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       case d: Double if marshal.fieldType(ty) == "float" => w.w(d.toString + "f")
       case d: Double => w.w(d.toString)
       case b: Boolean => w.w(if (b) "true" else "false")
-      case s: String => w.w(s)
+      case s: String => w.w("{" + s + "}")
       case e: EnumValue => w.w(marshal.typename(ty) + "::" + idCpp.enum(e.ty.name + "_" + e.name))
       case v: ConstRef => w.w(selfName + "::" + idCpp.const(v))
       case z: Map[_, _] => { // Value is record
@@ -170,13 +176,16 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
     // Requiring the extended class
     if (r.ext.cpp) {
-      // PSPDFkit TODO: Move into namespace
-      //refs.hpp.add(s"class $self; // Requiring extended class")
-      refs.cpp.add("#include "+q("../" + spec.cppFileIdentStyle(ident) + "." + spec.cppHeaderExt))
+      refs.cpp.add("#include "+q(spec.cppExtendedRecordIncludePrefix + spec.cppFileIdentStyle(ident) + "." + spec.cppHeaderExt))
     }
 
     // C++ Header
     def writeCppPrototype(w: IndentWriter) {
+      if (r.ext.cpp) {
+        w.w(s"struct $self; // Requiring extended class")
+        w.wl
+        w.wl
+      }
       writeDoc(w, doc)
       writeCppTypeParams(w, params)
       w.w("struct " + actualSelf + cppFinal).bracedSemi {
@@ -294,6 +303,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
     })
 
     val self = marshal.typename(ident, i)
+    val methodNamesInScope = i.methods.map(m => idCpp.method(m.ident))
 
     writeHppFile(ident, origin, refs.hpp, refs.hppFwds, w => {
       writeDoc(w, doc)
@@ -308,8 +318,8 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
         for (m <- i.methods) {
           w.wl
           writeDoc(w, m.doc)
-          val ret = marshal.returnType(m.ret)
-          val params = m.params.map(p => marshal.paramType(p.ty) + " " + idCpp.local(p.ident))
+          val ret = marshal.returnType(m.ret, methodNamesInScope)
+          val params = m.params.map(p => marshal.paramType(p.ty, methodNamesInScope) + " " + idCpp.local(p.ident))
           if (m.static) {
             w.wl(s"static $ret ${idCpp.method(m.ident)}${params.mkString("(", ", ", ")")};")
           } else {

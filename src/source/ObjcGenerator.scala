@@ -143,8 +143,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
     val self = marshal.typename(objcName, r)
 
     refs.header.add("#import <Foundation/Foundation.h>")
-    // PSPDFKit change - removed ".." to work around https://github.com/dropbox/djinni/issues/51
-    refs.body.add("!#import " + q(spec.objcIncludePrefix + marshal.headerName(ident)))
+    refs.body.add("!#import " + q((if (r.ext.objc) spec.objcExtendedRecordIncludePrefix else spec.objcIncludePrefix) + marshal.headerName(ident)))
 
     if (r.ext.objc) {
       refs.header.add(s"@class $noBaseSelf;")
@@ -372,7 +371,15 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
         w.w(s"return ").nestedN(2) {
           w.w("[NSString stringWithFormat:@\"<%@ %p")
 
-          for (f <- r.fields) w.w(s" ${idObjc.field(f.ident)}:%@")
+          for (f <- r.fields) {
+            w.w(s" ${idObjc.field(f.ident)}:")
+            f.ty.resolved.base match {
+              case extern: MExtern =>
+                w.w(s"${extern.objc.printDescription}")
+              case _ =>
+                w.w("%@")
+            }
+          }
           w.w(">\", self.class, (void *)self")
 
           for (f <- r.fields) {
@@ -384,7 +391,7 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
                 case DEnum => w.w(s"@(self.${idObjc.field(f.ident)})")
                 case _ => w.w(s"self.${idObjc.field(f.ident)}")
               }
-              case e: MExtern => w.w(e.objc.printDescription.format("self." + idObjc.field(f.ident)))
+              case e: MExtern => w.w("self." + idObjc.field(f.ident))
               case _ => w.w(s"self.${idObjc.field(f.ident)}")
             }
           }

@@ -7,7 +7,7 @@ import java.util.Date;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-public final class RecordWithDerivings implements Comparable<RecordWithDerivings> {
+public class RecordWithDerivings implements Comparable<RecordWithDerivings> {
 
 
     /*package*/ final byte mEight;

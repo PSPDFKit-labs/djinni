@@ -76,7 +76,8 @@ bool TestHelpers::check_map_list_record(const MapListRecord & rec) {
 }
 
 static const std::string HELLO_WORLD = "Hello World!";
-static const std::string NON_ASCII = "Non-ASCII / 非 ASCII 字符";
+static const std::string NON_ASCII("Non-ASCII /\0 非 ASCII 字符",
+                                   sizeof("Non-ASCII /\0 非 ASCII 字符")-1);
 
 void TestHelpers::check_client_interface_ascii(const std::shared_ptr<ClientInterface> & i) {
     ClientReturnedRecord cReturnedRecord = i->get_record(5, HELLO_WORLD, {});
@@ -90,6 +91,20 @@ void TestHelpers::check_client_interface_nonascii(const std::shared_ptr<ClientIn
     ClientReturnedRecord cReturnedRecord = i->get_record(5, NON_ASCII, {});
     if (cReturnedRecord.content != NON_ASCII) {
         std::string error_msg = "Expected String: " + NON_ASCII + " Actual: " + cReturnedRecord.content;
+        throw std::invalid_argument(error_msg);
+    }
+}
+
+void TestHelpers::check_client_interface_args(const std::shared_ptr<ClientInterface> & i) {
+    const std::string returned1 = i->meth_taking_interface(i);
+    if ("test" != returned1) {
+        std::string error_msg = "Expected String: 'test' Actual: '" + returned1 + "'";
+        throw std::invalid_argument(error_msg);
+    }
+
+    const std::string returned2 = i->meth_taking_optional_interface(i);
+    if ("test" != returned2) {
+        std::string error_msg = "Expected String: 'test' Actual: '" + returned2 + "'";
         throw std::invalid_argument(error_msg);
     }
 }

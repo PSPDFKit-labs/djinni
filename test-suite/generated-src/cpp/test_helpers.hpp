@@ -3,8 +3,8 @@
 
 #pragma once
 
+#include "../../handwritten-src/cpp/optional.hpp"
 #include <cstdint>
-#include <experimental/optional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -63,6 +63,8 @@ public:
     static void check_client_interface_ascii(const std::shared_ptr<ClientInterface> & i);
 
     static void check_client_interface_nonascii(const std::shared_ptr<ClientInterface> & i);
+
+    static void check_client_interface_args(const std::shared_ptr<ClientInterface> & i);
 
     static void check_enum_map(const std::unordered_map<color, std::string> & m);
 

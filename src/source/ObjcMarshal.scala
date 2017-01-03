@@ -58,7 +58,7 @@ class ObjcMarshal(spec: Spec) extends Marshal(spec) {
         List(ImportRef(include(d.name)))
       case DInterface =>
         val ext = d.body.asInstanceOf[Interface].ext
-        if (ext.cpp && !ext.objc) {
+        if (!ext.objc) {
           List(ImportRef("<Foundation/Foundation.h>"), DeclRef(s"@class ${typename(d.name, d.body)};", None))
         }
         else {
@@ -66,8 +66,8 @@ class ObjcMarshal(spec: Spec) extends Marshal(spec) {
         }
       case DRecord =>
         val r = d.body.asInstanceOf[Record]
-        val prefix = if (r.ext.objc) "../" else ""
-        List(ImportRef(q(spec.objcIncludePrefix + prefix + headerName(d.name))))
+        val prefix = if (r.ext.objc) spec.objcExtendedRecordIncludePrefix else spec.objcIncludePrefix
+        List(ImportRef(q(prefix + headerName(d.name))))
     }
     case e: MExtern => List(ImportRef(e.objc.header))
     case p: MParam => List()
@@ -89,8 +89,8 @@ class ObjcMarshal(spec: Spec) extends Marshal(spec) {
   }
 
   def printDescription(td: TypeDecl) = td.body match {
-    case e: Enum => "@(%s)"
-    case _ => "%s"
+    case e: Enum => "@(%ld)"
+    case _ => "%@"
   }
 
   // Return value: (Type_Name, Is_Class_Or_Not)
@@ -124,7 +124,7 @@ class ObjcMarshal(spec: Spec) extends Marshal(spec) {
               case DRecord => (idObjc.ty(d.name), true)
               case DInterface =>
                 val ext = d.body.asInstanceOf[Interface].ext
-                if (ext.cpp && !ext.objc)
+                if (!ext.objc)
                   (idObjc.ty(d.name), true)
                 else
                   (s"id<${idObjc.ty(d.name)}>", false)
