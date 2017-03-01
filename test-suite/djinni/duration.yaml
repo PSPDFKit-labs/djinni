@@ -32,6 +32,11 @@ jni:
   header: '"Duration-jni.hpp"'
   typename: jobject
   typeSignature: 'Ljava/time/Duration;'
+cx:
+  typename: 'Windows::Foundation::TimeSpan'
+  header: 'Windows.Foundation.FoundationContract.winmd'
+  boxed: 'TimeSpan'
+  reference: false
 ---
 name: h
 typedef: 'record'
@@ -62,6 +67,11 @@ jni:
   header: '"Duration-jni.hpp"'
   typename: jobject
   typeSignature: 'Ljava/time/Duration;'
+cx:
+  typename: 'Windows::Foundation::TimeSpan'
+  header: 'Windows.Foundation.FoundationContract.winmd'
+  boxed: 'TimeSpan'
+  reference: false
 ---
 name: min
 typedef: 'record'
@@ -92,6 +102,11 @@ jni:
   header: '"Duration-jni.hpp"'
   typename: jobject
   typeSignature: 'Ljava/time/Duration;'
+cx:
+  typename: 'Windows::Foundation::TimeSpan'
+  header: 'Windows.Foundation.FoundationContract.winmd'
+  boxed: 'TimeSpan'
+  reference: false
 ---
 name: s
 typedef: 'record'
@@ -122,6 +137,11 @@ jni:
   header: '"Duration-jni.hpp"'
   typename: jobject
   typeSignature: 'Ljava/time/Duration;'
+cx:
+  typename: 'Windows::Foundation::TimeSpan'
+  header: 'Windows.Foundation.FoundationContract.winmd'
+  boxed: 'TimeSpan'
+  reference: false
 ---
 name: ms
 typedef: 'record'
@@ -152,6 +172,11 @@ jni:
   header: '"Duration-jni.hpp"'
   typename: jobject
   typeSignature: 'Ljava/time/Duration;'
+cx:
+  typename: 'Windows::Foundation::TimeSpan'
+  header: 'Windows.Foundation.FoundationContract.winmd'
+  boxed: 'TimeSpan'
+  reference: false
 ---
 name: us
 typedef: 'record'
@@ -182,6 +207,11 @@ jni:
   header: '"Duration-jni.hpp"'
   typename: jobject
   typeSignature: 'Ljava/time/Duration;'
+cx:
+  typename: 'Windows::Foundation::TimeSpan'
+  header: 'Windows.Foundation.FoundationContract.winmd'
+  boxed: 'TimeSpan'
+  reference: false
 ---
 name: ns
 typedef: 'record'
@@ -212,3 +242,8 @@ jni:
   header: '"Duration-jni.hpp"'
   typename: jobject
   typeSignature: 'Ljava/time/Duration;'
+cx:
+  typename: 'Windows::Foundation::TimeSpan'
+  header: 'Windows.Foundation.FoundationContract.winmd'
+  boxed: 'TimeSpan'
+  reference: false

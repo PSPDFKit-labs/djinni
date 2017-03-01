@@ -55,5 +55,19 @@
         ],
       },
     },
+    {
+      "target_name": "djinni_cx",
+      "type": "static_library",
+      "sources": [
+      ],
+      "include_dirs": [
+        "cx",
+      ],
+      "direct_dependent_settings": {
+        "include_dirs": [
+          "cx",
+        ],
+      },
+    },
   ],
 }
