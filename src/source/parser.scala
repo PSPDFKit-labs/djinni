@@ -16,7 +16,7 @@
 
 package djinni
 
-import java.io.{File, InputStreamReader, FileInputStream, Writer}
+import java.io.{File, FileNotFoundException, InputStreamReader, FileInputStream, Writer}
 
 import djinni.ast.Interface.Method
 import djinni.ast.Record.DerivingType.DerivingType
@@ -26,10 +26,11 @@ import java.util.{Map => JMap}
 import org.yaml.snakeyaml.Yaml
 import scala.collection.JavaConversions._
 import scala.collection.mutable
+import scala.util.control.Breaks._
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.parsing.input.{Position, Positional}
 
-case class Parser() {
+case class Parser(includePaths: List[String]) {
 
 val visitedFiles = mutable.Set[File]()
 val fileStack = mutable.Stack[File]()
@@ -37,21 +38,35 @@ val fileStack = mutable.Stack[File]()
 private object IdlParser extends RegexParsers {
   override protected val whiteSpace = """[ \t\n\r]+""".r
 
-  def idlFile(origin: String): Parser[IdlFile] = rep(importFile) ~ rep(typeDecl(origin)) ^^ { case imp~types => IdlFile(imp, types) }
+  def idlFile(origin: String): Parser[IdlFile] = rep(importFileRef) ~ rep(typeDecl(origin)) ^^ { case imp~types => IdlFile(imp, types) }
 
-  def importFile: Parser[FileRef] = {
-    
-	def fileParent:String = if (fileStack.top.getParent() != null) return fileStack.top.getParent() + "/" else return ""
-
+  def importFileRef(): Parser[FileRef] = {
     ("@" ~> directive) ~ ("\"" ~> filePath <~ "\"") ^^ {
-      case "import" ~ x =>
-        val newPath = fileParent + x
-        new IdlFileRef(new File(newPath))
-      case "extern" ~ x =>
-        val newPath = fileParent + x
-        new ExternFileRef(new File(newPath))
+      case "import" ~ x => {
+        new IdlFileRef(importFile(x))
+      }
+      case "extern" ~ x => {
+        new ExternFileRef(importFile(x))
+      }
     }
   }
+
+  def importFile(fileName: String): File = {
+    var file: Option[File] = None
+
+    val path = includePaths.find(path => {
+      val relPath = if (path.isEmpty) fileStack.top.getParent() else path
+      val tmp = new File(relPath, fileName)
+      val exists = tmp.exists
+      if (exists) file = Some(tmp)
+      exists
+    })
+
+    if (file.isEmpty) throw new FileNotFoundException("Unable to find file \"" + fileName + "\" at " + fileStack.top.getCanonicalPath)
+
+    return file.get
+  }
+
   def filePath = "[^\"]*".r
 
   def directive = importDirective | externDirective
@@ -108,6 +123,7 @@ private object IdlParser extends RegexParsers {
     _.map(ident => ident.name match {
       case "eq" => Record.DerivingType.Eq
       case "ord" => Record.DerivingType.Ord
+      case "parcelable" => Record.DerivingType.AndroidParcelable
       case _ => return err( s"""Unrecognized deriving type "${ident.name}"""")
     }).toSet
   }
@@ -129,8 +145,8 @@ private object IdlParser extends RegexParsers {
   }
   def flagsOption: Parser[Enum.Option] = doc ~ ident ~ opt("=" ~> (flagsAll | flagsNone)) ^^ {
     case doc~ident~None => Enum.Option(ident, doc, None)
-    case doc~ident~Some("all") => Enum.Option(ident, doc, Some(Enum.SpecialFlag.All))
-    case doc~ident~Some("none") => Enum.Option(ident, doc, Some(Enum.SpecialFlag.None))
+    case doc~ident~Some("all") => Enum.Option(ident, doc, Some(Enum.SpecialFlag.AllFlags))
+    case doc~ident~Some("none") => Enum.Option(ident, doc, Some(Enum.SpecialFlag.NoFlags))
   }
 
   def interfaceHeader = "interface" ~> extInterface

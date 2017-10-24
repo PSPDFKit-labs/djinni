@@ -195,7 +195,7 @@ underlying type `NSInteger`, and Java enums.
 ### Flags
 Flags are translated to C++ `enum class`es with underlying type `unsigned` and a generated set
 of overloaded bitwise operators for convenience, ObjC `NS_OPTIONS` with underlying type
-`NSUInteger`, and Java enums. Contrary to the above enums, the enumerants of flags represent
+`NSUInteger`, and Java `EnumSet<>`. Contrary to the above enums, the enumerants of flags represent
 single bits instead of integral values.
 
 When specifying a `flags` type in your IDL file you can assign special semantics to options:
@@ -209,7 +209,7 @@ my_flags = flags {
   all_flags = all;
 }
 ```
-In the above example the elements `no_flags` and `all_flags` are given special meaning.
+In the above example the elements marked with `none` and `all` are given special meaning.
 In C++ and ObjC the `no_flags` option is generated with a value that has no bits set (i.e. `0`),
 and `all_flags` is generated as a bitwise-or combination of all other values. In Java these
 special options are not generated as one can just use `EnumSet.noneOf()` and `EnumSet.allOf()`.
@@ -437,13 +437,55 @@ integers are not included because they are not available in Java.
 ## Test Suite
 Run `make test` to invoke the test suite, found in the test-suite subdirectory. It will build and run Java code on a local JVMy, plus Objective-C on an iOS simulator.  The latter will only work on a Mac with Xcode.
 
+## Generate a standalone jar
+
+The `djinni_jar` target of the main `Makefile` creates a standalone `.jar`. 
+This uses the [sbt assembly plugin](https://github.com/sbt/sbt-assembly) under the hoods.
+
+Simply call this target from the root directory:
+```shell
+make djinni_jar
+```
+This will produce a `.jar` file inside the `src/target/scala_<SCALA_VERSION>/djinni-assembly-<VERSION>.jar`.
+
+You can move and use it as any other executable `.jar`.
+
+Assuming the `.jar` is located at `$DJINNI_JAR_DIR` its version equals `0.1-SNAPSHOT`:
+```shell
+# Example
+java -jar $DJINNI_JAR_DIR/djinni-assembly-0.1-SNAPSHOT.jar \
+    --java-out "$temp_out/java" \
+    --java-package $java_package \
+    --java-class-access-modifier "package" \
+    --java-nullable-annotation "javax.annotation.CheckForNull" \
+    --java-nonnull-annotation "javax.annotation.Nonnull" \
+    --ident-java-field mFooBar \
+    \
+    --cpp-out "$temp_out/cpp" \
+    --cpp-namespace textsort \
+    --ident-cpp-enum-type foo_bar \
+    \
+    --jni-out "$temp_out/jni" \
+    --ident-jni-class NativeFooBar \
+    --ident-jni-file NativeFooBar \
+    \
+    --objc-out "$temp_out/objc" \
+    --objcpp-out "$temp_out/objc" \
+    --objc-type-prefix TXS \
+    --objc-swift-bridging-header "TextSort-Bridging-Header" \
+    \
+    --idl "$in"
+```
+
+*Note*: The `all` target of the main `Makefile` includes the `djinni_jar` target.
+
 ## Community Links
 
 * Join the discussion with other developers at the [Mobile C++ Slack Community](https://mobilecpp.herokuapp.com/)
 * There are a set of [tutorials](http://mobilecpptutorials.com/) for building a cross-platform app using Djinni.
 * [mx3](https://github.com/libmx3/mx3) is an example project demonstrating use of Djinni and other tools.
 * [Slides](https://bit.ly/djinnitalk) and [video](https://bit.ly/djinnivideo) from the CppCon 2014 talk where we introduced Djinni.
-* [Slides](https://bit.ly/djinnitalk2) and [video](https://bit.ly/djinnivideo2) from the CppCon 2015 about Djinni implementatino techniques, and the addition of Python.
+* [Slides](https://bit.ly/djinnitalk2) and [video](https://bit.ly/djinnivideo2) from the CppCon 2015 about Djinni implementation techniques, and the addition of Python.
 * You can see a [CppCon 2014 talk](https://www.youtube.com/watch?v=5AZMEm3rZ2Y) by app developers at Dropbox about their cross-platform experiences.
 
 
@@ -458,4 +500,5 @@ Run `make test` to invoke the test suite, found in the test-suite subdirectory. 
 
 ## Contacts
 - Jacob Potter - `djinni@j4cbo.com`
+- Xianwen Chen - `xianwen@dropbox.com`
 - Andrew Twyman - `atwyman@dropbox.com`

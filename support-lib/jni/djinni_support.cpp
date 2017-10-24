@@ -36,15 +36,37 @@ static void detach_current_thread (void *env) {
 }
 // PSPDFKit
 
+/*static*/
+JniClassInitializer::registration_vec & JniClassInitializer::get_vec() {
+    static JniClassInitializer::registration_vec m;
+    return m;
+}
+
+/*static*/
+std::mutex & JniClassInitializer::get_mutex() {
+    static std::mutex mtx;
+    return mtx;
+}
+
+/*static*/
+JniClassInitializer::registration_vec JniClassInitializer::get_all() {
+    const std::lock_guard<std::mutex> lock(get_mutex());
+    return get_vec();
+}
+
+JniClassInitializer::JniClassInitializer(std::function<void()> init) {
+    const std::lock_guard<std::mutex> lock(get_mutex());
+    get_vec().push_back(std::move(init));
+}
+
 void jniInit(JavaVM * jvm) {
     g_cachedJVM = jvm;
 
     try {
-        for (const auto & kv : JniClassInitializer::Registration::get_all()) {
-            kv.second->init();
+        for (const auto & initializer : JniClassInitializer::get_all()) {
+            initializer();
         }
-
-    } catch (const std::exception & e) {
+    } catch (const std::exception &) {
         // Default exception handling only, since non-default might not be safe if init
         // is incomplete.
         jniDefaultSetPendingFromCurrent(jniGetThreadEnv(), __func__);
@@ -278,10 +300,13 @@ JniFlags::JniFlags(const std::string & name)
 unsigned JniFlags::flags(JNIEnv * env, jobject obj) const {
     DJINNI_ASSERT(obj && env->IsInstanceOf(obj, m_clazz.get()), env);
     auto size = env->CallIntMethod(obj, m_methSize);
+    jniExceptionCheck(env);
     unsigned flags = 0;
     auto it = LocalRef<jobject>(env, env->CallObjectMethod(obj, m_methIterator));
+    jniExceptionCheck(env);
     for(jint i = 0; i < size; ++i) {
         auto jf = LocalRef<jobject>(env, env->CallObjectMethod(it, m_iterator.methNext));
+        jniExceptionCheck(env);
         flags |= (1u << static_cast<unsigned>(ordinal(env, jf)));
     }
     return flags;
@@ -540,7 +565,7 @@ std::string jniUTF8FromString(JNIEnv * env, const jstring jstr) {
 }
 
 template<int wcharTypeSize>
-static std::wstring implUTF16ToWString(const char16_t * data, size_t length)
+static std::wstring implUTF16ToWString(const char16_t * /*data*/, size_t /*length*/)
 {
     static_assert(wcharTypeSize == 2 || wcharTypeSize == 4, "wchar_t must be represented by UTF-16 or UTF-32 encoding");
     return {}; // unreachable

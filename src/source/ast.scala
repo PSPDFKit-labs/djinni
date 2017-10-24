@@ -65,7 +65,7 @@ case class Enum(options: Seq[Enum.Option], flags: Boolean) extends TypeDef
 object Enum {
   object SpecialFlag extends Enumeration {
     type SpecialFlag = Value
-    val None, All = Value
+    val NoFlags, AllFlags = Value
   }
   import SpecialFlag._
   case class Option(ident: Ident, doc: Doc, specialFlag: scala.Option[SpecialFlag])
@@ -75,7 +75,7 @@ case class Record(ext: Ext, fields: Seq[Field], consts: Seq[Const], derivingType
 object Record {
   object DerivingType extends Enumeration {
     type DerivingType = Value
-    val Eq, Ord = Value
+    val Eq, Ord, AndroidParcelable = Value
   }
 }
 

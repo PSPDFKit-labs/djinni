@@ -36,6 +36,7 @@ package object generatorTools {
                    javaAnnotation: Option[String],
                    javaNullableAnnotation: Option[String],
                    javaNonnullAnnotation: Option[String],
+                   javaImplementAndroidOsParcelable: Boolean,
                    javaUseFinalForRecord: Boolean,
                    cppOutFolder: Option[File],
                    cppHeaderOutFolder: Option[File],
@@ -74,6 +75,7 @@ package object generatorTools {
                    objcppIncludeObjcPrefix: String,
                    objcppNamespace: String,
                    objcBaseLibIncludePrefix: String,
+                   objcSwiftBridgingHeaderWriter: Option[Writer],
                    outFileListWriter: Option[Writer],
                    skipGeneration: Boolean,
                    yamlOutFolder: Option[File],
@@ -212,6 +214,10 @@ package object generatorTools {
           createFolder("Objective-C++", spec.objcppOutFolder.get)
         }
         new ObjcppGenerator(spec).generate(idl)
+      }
+      if (spec.objcSwiftBridgingHeaderWriter.isDefined) {
+        SwiftBridgingHeaderGenerator.writeAutogenerationWarning(spec.objcSwiftBridgingHeaderWriter.get)
+        new SwiftBridgingHeaderGenerator(spec).generate(idl)
       }
       if (spec.yamlOutFolder.isDefined) {
         if (!spec.skipGeneration) {
@@ -384,7 +390,7 @@ abstract class Generator(spec: Spec)
   def normalEnumOptions(e: Enum) = e.options.filter(_.specialFlag == None)
 
   def writeEnumOptionNone(w: IndentWriter, e: Enum, ident: IdentConverter) {
-    for (o <- e.options.find(_.specialFlag == Some(Enum.SpecialFlag.None))) {
+    for (o <- e.options.find(_.specialFlag == Some(Enum.SpecialFlag.NoFlags))) {
       writeDoc(w, o.doc)
       w.wl(ident(o.ident.name) + " = 0,")
     }
@@ -400,7 +406,7 @@ abstract class Generator(spec: Spec)
   }
 
   def writeEnumOptionAll(w: IndentWriter, e: Enum, ident: IdentConverter) {
-    for (o <- e.options.find(_.specialFlag == Some(Enum.SpecialFlag.All))) {
+    for (o <- e.options.find(_.specialFlag == Some(Enum.SpecialFlag.AllFlags))) {
       writeDoc(w, o.doc)
       w.w(ident(o.ident.name) + " = ")
       w.w(normalEnumOptions(e).map(o => ident(o.ident.name)).fold("0")((acc, o) => acc + " | " + o))

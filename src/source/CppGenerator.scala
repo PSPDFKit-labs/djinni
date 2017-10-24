@@ -63,7 +63,10 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       refs.hpp.add("#include <functional>") // needed for std::hash
     }
 
-    val underlyingType = marshal.enumUnderlyingType(e)
+    val flagsType = "unsigned"
+    val enumType = "int"
+    val underlyingType = if(e.flags) flagsType else enumType
+
     writeHppFile(ident, origin, refs.hpp, refs.hppFwds, w => {
       w.w(s"enum class $self : $underlyingType").bracedSemi {
         writeEnumOptionNone(w, e, idCpp.enum)
@@ -74,31 +77,20 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
       if(e.flags) {
         // Define some operators to make working with "enum class" flags actually practical
         def binaryOp(op: String) {
-          w.w(s"CONSTEXPR $self operator$op($self lhs, $self rhs) noexcept").braced {
-            w.wl(s"return static_cast<$self>(static_cast<$underlyingType>(lhs) $op static_cast<$underlyingType>(rhs));")
+          w.w(s"constexpr $self operator$op($self lhs, $self rhs) noexcept").braced {
+            w.wl(s"return static_cast<$self>(static_cast<$flagsType>(lhs) $op static_cast<$flagsType>(rhs));")
           }
-          w.w(s"CONSTEXPR $self& operator$op=($self& lhs, $self rhs) noexcept").braced {
+          w.w(s"constexpr $self& operator$op=($self& lhs, $self rhs) noexcept").braced {
             w.wl(s"return lhs = lhs $op rhs;") // Ugly, yes, but complies with C++11 restricted constexpr
           }
         }
-
-        // this isn't nice. GCC 4.9 (Android) doesn't support proper constexpr.
-        // if we can't use constexpr, just inline them.
-        w.wl("#if __cpp_constexpr >= 201103L")
-        w.wl("#define CONSTEXPR constexpr")
-        w.wl("#else")
-        w.wl("#define CONSTEXPR inline")
-        w.wl("#endif")
-
         binaryOp("|")
         binaryOp("&")
         binaryOp("^")
 
-        w.w(s"CONSTEXPR $self operator~($self x) noexcept").braced {
-          w.wl(s"return static_cast<$self>(~static_cast<$underlyingType>(x));")
+        w.w(s"constexpr $self operator~($self x) noexcept").braced {
+          w.wl(s"return static_cast<$self>(~static_cast<$flagsType>(x));")
         }
-
-        w.wl("#undef CONSTEXPR")
       }
     },
     w => {
@@ -240,7 +232,7 @@ class CppGenerator(spec: Spec) extends Generator(spec) {
 
     writeHppFile(cppName, origin, refs.hpp, refs.hppFwds, writeCppPrototype)
 
-    if (r.consts.nonEmpty || r.derivingTypes.nonEmpty) {
+    if (r.consts.nonEmpty || r.derivingTypes.contains(DerivingType.Eq) || r.derivingTypes.contains(DerivingType.Ord)) {
       writeCppFile(cppName, origin, refs.cpp, w => {
         generateCppConstants(w, r.consts, actualSelf)
 
