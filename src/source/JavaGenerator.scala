@@ -185,6 +185,7 @@ class JavaGenerator(spec: Spec) extends Generator(spec) {
               w.wl("boolean destroyed = this.destroyed.getAndSet(true);")
               w.wl("if (!destroyed) nativeDestroy(this.nativeRef);")
             }
+            w.wl("@Override")
             w.wl("protected void finalize() throws java.lang.Throwable").braced {
               w.wl("destroy();")
               w.wl("super.finalize();")

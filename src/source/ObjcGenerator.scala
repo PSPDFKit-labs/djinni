@@ -45,8 +45,9 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
   override def generateEnum(origin: String, ident: Ident, doc: Doc, e: Enum) {
     val refs = new ObjcRefs()
-
-    refs.header.add("#import <Foundation/Foundation.h>")
+    
+    // PSPDFKit changed from foundation
+    refs.header.add("#import \"PSPDFEnvironment.h\"")
 
     val self = marshal.typename(ident, e)
     writeObjcFile(marshal.headerName(ident), origin, refs.header, w => {
@@ -85,7 +86,8 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
 
     val self = marshal.typename(ident, i)
 
-    refs.header.add("#import <Foundation/Foundation.h>")
+    // PSPDFKit changed from foundation
+    refs.header.add("#import \"PSPDFEnvironment.h\"")
 
     def writeObjcFuncDecl(method: Interface.Method, w: IndentWriter) {
       val label = if (method.static) "+" else "-"
@@ -142,7 +144,9 @@ class ObjcGenerator(spec: Spec) extends BaseObjcGenerator(spec) {
     val noBaseSelf = marshal.typename(ident, r) // Used for constant names
     val self = marshal.typename(objcName, r)
 
-    refs.header.add("#import <Foundation/Foundation.h>")
+    // PSPDFKit changed from foundation
+    refs.header.add("#import \"PSPDFEnvironment.h\"")
+
     refs.body.add("!#import " + q((if (r.ext.objc) spec.objcExtendedRecordIncludePrefix else spec.objcIncludePrefix) + marshal.headerName(ident)))
 
     if (r.ext.objc) {

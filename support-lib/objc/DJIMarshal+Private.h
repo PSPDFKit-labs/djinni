@@ -29,7 +29,12 @@ struct Bool {
 
     struct Boxed {
         using ObjcType = NSNumber*;
-        static CppType toCpp(ObjcType x) noexcept { assert(x); return Bool::toCpp([x boolValue]); }
+        static CppType toCpp(ObjcType x) noexcept {
+            // PSPDFKit: Xcode 9 warns here on NSNumber/NSValue types.
+            #ifndef __clang_analyzer__
+            assert(x);
+            #endif
+            return Bool::toCpp([x boolValue]); }
         static ObjcType fromCpp(CppType x) noexcept { return [NSNumber numberWithBool:Bool::fromCpp(x)]; }
     };
 };

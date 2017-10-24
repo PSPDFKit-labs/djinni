@@ -17,7 +17,7 @@ objc:
   boxed: 'NSNumber'
   pointer: false
   hash: '(NSUInteger)%s'
-  printDescription: '%s'
+  printDescription: '%f'
 objcpp:
   translator: '::djinni::Duration'
   header: '"Duration-objc.hpp"'
